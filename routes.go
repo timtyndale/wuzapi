@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/justinas/alice"
-	hlog "github.com/rs/zerolog/hlog"
 	"github.com/rs/zerolog"
 )
 
@@ -36,22 +35,6 @@ func (s *server) routes() {
 
 	c := alice.New()
 	c = c.Append(s.authalice)
-	c = c.Append(hlog.NewHandler(log))
-
-	c = c.Append(hlog.AccessHandler(func(r *http.Request, status, size int, duration time.Duration) {
-		hlog.FromRequest(r).Info().
-			Str("method", r.Method).
-			Stringer("url", r.URL).
-			Int("status", status).
-			Int("size", size).
-			Dur("duration", duration).
-			Str("userid", r.Context().Value("userinfo").(Values).Get("Id")).
-			Msg("Got API Request")
-	}))
-	c = c.Append(hlog.RemoteAddrHandler("ip"))
-	c = c.Append(hlog.UserAgentHandler("user_agent"))
-	c = c.Append(hlog.RefererHandler("referer"))
-	c = c.Append(hlog.RequestIDHandler("req_id", "Request-Id"))
 
 	s.router.Handle("/session/connect", c.Then(s.Connect())).Methods("POST")
 	s.router.Handle("/session/disconnect", c.Then(s.Disconnect())).Methods("POST")
