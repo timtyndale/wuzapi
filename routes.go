@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/justinas/alice"
+	hlog "github.com/rs/zerolog/hlog"
 	"github.com/rs/zerolog"
 )
 
