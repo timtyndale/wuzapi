@@ -8,7 +8,7 @@ import (
 
 	"github.com/justinas/alice"
 	"github.com/rs/zerolog"
-	"github.com/rs/zerolog/hlog"
+	hlog "github.com/rs/zerolog/hlog"
 )
 
 type Middleware = alice.Constructor
