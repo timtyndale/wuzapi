@@ -8,7 +8,6 @@ import (
 
 	"github.com/justinas/alice"
 	"github.com/rs/zerolog"
-	hlog "github.com/rs/zerolog/hlog"
 )
 
 type Middleware = alice.Constructor
@@ -35,7 +34,6 @@ func (s *server) routes() {
 	adminRoutes.Handle("/users/{id}", s.DeleteUser()).Methods("DELETE")
 
 	c := alice.New()
-	c = c.Append(hlog.RecoverHandler(log))
 	c = c.Append(s.authalice)
 	c = c.Append(hlog.NewHandler(log))
 
