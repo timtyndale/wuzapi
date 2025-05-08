@@ -531,28 +531,35 @@ func (s *server) PairPhone() http.HandlerFunc {
 
 // Gets Connected and LoggedIn Status
 func (s *server) GetStatus() http.HandlerFunc {
-
 	return func(w http.ResponseWriter, r *http.Request) {
 
 		txtid := r.Context().Value("userinfo").(Values).Get("Id")
 		userid, _ := strconv.Atoi(txtid)
 
-		if clientPointer[userid] == nil {
-			s.Respond(w, r, http.StatusInternalServerError, errors.New("No session"))
+		var isConnected, isLoggedIn bool
+
+		// If there is an active client for this user, query its state.
+		// Otherwise, just return "false" values instead of an error so the
+		// front‑end can decide what to show (e.g. prompt to connect / show QR).
+		if client := clientPointer[userid]; client != nil {
+			isConnected = client.IsConnected()
+			isLoggedIn = client.IsLoggedIn()
+		} else {
+			isConnected = false
+			isLoggedIn = false
+		}
+
+		response := map[string]any{
+			"Connected": isConnected,
+			"LoggedIn":  isLoggedIn,
+		}
+		responseJSON, err := json.Marshal(response)
+		if err != nil {
+			s.Respond(w, r, http.StatusInternalServerError, err)
 			return
 		}
 
-		isConnected := clientPointer[userid].IsConnected()
-		isLoggedIn := clientPointer[userid].IsLoggedIn()
-
-		response := map[string]interface{}{"Connected": isConnected, "LoggedIn": isLoggedIn}
-		responseJson, err := json.Marshal(response)
-		if err != nil {
-			s.Respond(w, r, http.StatusInternalServerError, err)
-		} else {
-			s.Respond(w, r, http.StatusOK, string(responseJson))
-		}
-		return
+		s.Respond(w, r, http.StatusOK, string(responseJSON))
 	}
 }
 
